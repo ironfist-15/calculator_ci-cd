@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 350px;
+        }
+
+        input[type="number"] {
+            width: 45%;
+            padding: 8px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #5c6bc0;
+            color: white;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #3f51b5;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .clear-btn {
+            background-color: #e53935;
+        }
+
+        .clear-btn:hover {
+            background-color: #c62828;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .action-btn {
+            background-color: #43a047;
+        }
+
+        .action-btn:hover {
+            background-color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculator</h1>
+        <form id="calcForm">
+            <input type="number" id="a" placeholder="Number A" required>
+            <input type="number" id="b" placeholder="Number B" required>
+            <div class="buttons">
+                <button type="button" onclick="calculate('add')">+</button>
+                <button type="button" onclick="calculate('subtract')">-</button>
+                <button type="button" onclick="calculate('multiply')">×</button>
+                <button type="button" onclick="calculate('divide')">÷</button>
+            </div>
+        </form>
+
+        <div class="result" id="result"></div>
+
+        <!-- New button to clear input fields -->
+        <button class="action-btn" onclick="clearInputs()">Clear Inputs</button>
+        <!-- Existing button to clear history -->
+        <button class="clear-btn" onclick="clearHistory()">Clear History</button>
+
+        <h2>History</h2>
+        <ul id="historyList"></ul>
+    </div>
+
+    <script>
+        async function calculate(op) {
+            const a = document.getElementById("a").value;
+            const b = document.getElementById("b").value;
+            if(a === "" || b === "") return;
+
+            try {
+                const res = await fetch(`/calc/${op}?a=${a}&b=${b}`);
+                const result = await res.text();
+                document.getElementById("result").innerText = `Result (${op}): ${result}`;
+                fetchHistory();
+            } catch(err) {
+                alert(err);
+            }
+        }
+
+        async function fetchHistory() {
+            try {
+                const res = await fetch("/calc/history");
+                const history = await res.json();
+                const historyList = document.getElementById("historyList");
+                historyList.innerHTML = "";
+                history.forEach(item => {
+                    const li = document.createElement("li");
+                    li.innerText = item;
+                    historyList.appendChild(li);
+                });
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        async function clearHistory() {
+            try {
+                await fetch("/calc/history", { method: "DELETE" });
+                document.getElementById("historyList").innerHTML = "";
+                document.getElementById("result").innerText = "";
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        // New function to clear input boxes
+        function clearInputs() {
+            document.getElementById("a").value = "";
+            document.getElementById("b").value = "";
+            document.getElementById("result").innerText = "";
+        }
+
+        // load history when page loads
+        fetchHistory();
+    </script>
+</body>
+</html>

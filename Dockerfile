@@ -1,19 +1,14 @@
-# this has both mvn and jdk , it is called builder(stage 1)
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+# Use a lightweight OpenJDK runtime image
+FROM eclipse-temurin:17-jre-jammy
 
-COPY pom.xml .
-COPY src ./src
-# we are asking jenkins to run tests alone separately
-RUN mvn clean package -DskipTests
-
-# second stage (the previous stage is discarded i guess(not sure)
-FROM eclipse-temurin:17-jre
-
+# Set working directory inside the container
 WORKDIR /app
 
-# from the stage named builder copy and docker renames the compiled jar to app.jar
-COPY --from=builder /app/target/*.jar app.jar
+# Copy the prebuilt JAR from Jenkins build artifacts
+COPY target/calculator-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8080
+# Expose the application port
+EXPOSE 8081
 
+# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

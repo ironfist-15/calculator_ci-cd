@@ -7,71 +7,71 @@ Demonstrates the full CI/CD workflow, including automated testing, containerizat
 
 
 Pipeline Syntax:
-pipeline {
-    agent any
 
-    environment {
-        APP_NAME = "calculator"
-        PROJECT_DIR = "/home/ubuntu/calculator_ci-cd"
-        TARGET_JAR = "calculator-0.0.1-SNAPSHOT.jar"
-        IMAGE_NAME = "calculator:latest"
+    pipeline {
+        agent any
+        environment {
+            APP_NAME = "calculator"
+            PROJECT_DIR = "/home/ubuntu/calculator_ci-cd"
+            TARGET_JAR = "calculator-0.0.1-SNAPSHOT.jar"
+            IMAGE_NAME = "calculator:latest"
+        }
+    
+        stages {
+    
+            stage('Checkout') {
+                steps {
+                    cleanWs()
+                    git branch: 'main', url: 'https://github.com/ironfist-15/calculator_ci-cd'
+                }
+            }
+    
+            stage('Test') {
+                steps {
+                    echo "Running tests..."
+                    sh 'mvn test'   // shows test output directly in console
+                }
+            }
+    
+            stage('Build Jar') {
+                steps {
+                    echo "Building application..."
+                    sh 'mvn clean package -DskipTests=false'
+                }
+            }
+    
+            stage('Copy Jar to Project') {
+                steps {
+                    echo "Copying jar to project root..."
+                    sh 'sudo cp -f target/*.jar ${PROJECT_DIR}/target/'
+                }
+            }
+    
+            stage('Build Docker Image') {
+                steps {
+                    echo "Building Docker image..."
+                    sh '''
+                        docker image prune -f
+                        docker build -t ${IMAGE_NAME} .
+                    '''
+                }
+            }
+    
+            stage('Restart Application') {
+                steps {
+                    echo "Restarting application via systemd..."
+                    sh 'sudo systemctl restart docker_calculator.service'
+                }
+            }
+        }
+    
+        post {
+            success {
+                echo " Deployment successful! App is running on port 8081."
+            }
+            failure {
+                echo " Build or deployment failed!"
+            }
+        }
     }
-
-    stages {
-
-        stage('Checkout') {
-            steps {
-                cleanWs()
-                git branch: 'main', url: 'https://github.com/ironfist-15/calculator_ci-cd'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo "Running tests..."
-                sh 'mvn test'   // shows test output directly in console
-            }
-        }
-
-        stage('Build Jar') {
-            steps {
-                echo "Building application..."
-                sh 'mvn clean package -DskipTests=false'
-            }
-        }
-
-        stage('Copy Jar to Project') {
-            steps {
-                echo "Copying jar to project root..."
-                sh 'sudo cp -f target/*.jar ${PROJECT_DIR}/target/'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image..."
-                sh '''
-                    docker image prune -f
-                    docker build -t ${IMAGE_NAME} .
-                '''
-            }
-        }
-
-        stage('Restart Application') {
-            steps {
-                echo "Restarting application via systemd..."
-                sh 'sudo systemctl restart docker_calculator.service'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo " Deployment successful! App is running on port 8081."
-        }
-        failure {
-            echo " Build or deployment failed!"
-        }
-    }
-}
 

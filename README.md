@@ -30,7 +30,7 @@ Pipeline Syntax:
         stage('Test') {
             steps {
                 echo "Running tests..."
-                sh 'mvn test'   // shows test output directly in console
+                sh 'mvn test'  
             }
         }
         

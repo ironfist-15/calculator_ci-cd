@@ -1,5 +1,5 @@
 This project is created to demonstrate a CI-CD pipeline using Jenkins . On every commit to the repository, the pipeline runs tests, compiles the code, and packages it.
-The packaged code is built into a Docker image and deployed as a container on an AWS EC2 instance. Docker is used here in case if we want to push the built image to docker hub or Amazon ECS .
+The packaged code is built into a Docker image and deployed as a container on an AWS EC2 instance. Docker is used here in case if we want to push the built image to docker hub or Amazon ECR .
 Demonstrates the full CI/CD workflow, including automated testing, containerization, and continuous deployment.
 
 <img width="1853" height="459" alt="Screenshot 2025-12-25 015522" src="https://github.com/user-attachments/assets/b2d18a7f-f192-4569-8814-a1f7eec14ca8" />
